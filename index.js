@@ -1,6 +1,7 @@
 'use strict';
 
 const Hapi = require('hapi');
+const api = require('./src/apiSetup.js');
 
 const server = new Hapi.Server();
 server.connection({ port: ~~process.env.PORT || 3000 });
@@ -13,10 +14,14 @@ server.route({
     }
 });
 
-server.start((err) => {
-
+server.register(api)
+.then(() => {
+  server.start((err) => {
     if (err) {
         throw err;
     }
     console.log(`Server running at: ${server.info.uri}`);
-});
+  })
+})
+
+
