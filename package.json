@@ -19,10 +19,13 @@
   "dependencies": {
     "bluebird": "^3.5.0",
     "hapi": "^16.4.3",
+    "hapi-swagger": "^7.7.0",
+    "inert": "^4.2.0",
     "joi": "^10.6.0",
     "lodash": "^4.17.4",
     "pg": "^6.4.0",
-    "sequelize": "^4.2.1"
+    "sequelize": "^4.2.1",
+    "vision": "^4.1.1"
   },
   "engines": {
     "node": "6.11.x"

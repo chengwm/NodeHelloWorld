@@ -16,6 +16,9 @@ exports.register = function (server, options, next) {
     method: "GET",
     path: "/object/{key}",
     config: {
+      tags: ["api"],
+      description: `Retrieve value matched to a provided key from 
+      database, matching time it was provided in the database`,
       validate: {
         params: {
           key: Joi.string().required(),
@@ -56,6 +59,8 @@ exports.register = function (server, options, next) {
     method: "POST",
     path: "/object",
     config: {
+      tags: ["api"],
+      description: "Post new Key-Value Pair into database",
       validate: {
         payload: Joi.object().length(1).required()
       }

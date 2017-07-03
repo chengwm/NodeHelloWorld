@@ -1,6 +1,9 @@
 'use strict';
 
 const Hapi = require('hapi');
+const Inert = require("inert");
+const Vision = require("vision");
+const HapiSwagger = require("hapi-swagger");
 const api = require('./src/apiSetup.js');
 const db = require('./src/dbSetup.js');
 
@@ -11,16 +14,19 @@ if(!process.env.DATABASE_URL) {
   throw new Error("No connection string set")
 }
 
-server.route({
-  method: 'GET',
-  path: '/',
-  handler: function(request, reply) {
-      reply('Hello world');
-  }
-});
-
 // load plugins
-server.register(api)
+server.register([
+  Inert, Vision, {
+    register: HapiSwagger,
+    options: {
+      documentationPath: "/",
+      info: {
+        title: "VD API"
+      }
+    }
+  }
+])
+.then(() => server.register(api))
 .then(() => server.register({
   register: db,
 }))
@@ -31,6 +37,6 @@ server.register(api)
     }
     console.log(`Server running at: ${server.info.uri}`);
   })
-})
+}).catch(err => console.log(err))
 
 
