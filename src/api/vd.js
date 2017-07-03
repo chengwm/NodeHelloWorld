@@ -1,5 +1,6 @@
 const Joi = require("joi")
 const _ = require('lodash')
+const Boom = require('boom')
 
 exports.register = function (server, options, next) {
   server.route({
@@ -17,25 +18,63 @@ exports.register = function (server, options, next) {
     config: {
       validate: {
         params: {
-          key: Joi.string().required()
+          key: Joi.string().required(),
+        },
+        query: {
+          timestamp: Joi.date().timestamp('unix').optional()
         }
       }
     }, 
     handler: function(request, reply){
       let m = getModels(request)
       let key = request.params.key
+      let timestamp = request.query.timestamp
 
-      m.VDModel.findOne({
+      let queryOptions = {
         attributes: ['value'],
         where: { key },
         order: [['createdAt', 'DESC']]
-      }).then(result => {
+      }
+
+      if(timestamp){
+        queryOptions.where.createdAt = {
+          $lt: timestamp
+        }
+      }
+
+      m.VDModel.findOne(queryOptions).then(result => {
         if(result){
           reply(result.toJSON())
         } else {
-          reply("No results found")
+          reply(Boom.notFound())
         }
       }).catch(err => reply(err))
+    }
+  })
+
+  server.route({
+    method: "POST",
+    path: "/object",
+    config: {
+      validate: {
+        payload: Joi.object().length(1).required()
+      }
+    }, 
+    handler: function(request, reply){
+      let m = getModels(request)
+      let pairs = _.toPairs(request.payload)
+
+      let [ key, value ] = pairs[0]
+      m.VDModel.create({
+        key, value
+      }).then(result => {
+        reply({
+          key: result.key,
+          value: result.value,
+          timestamp: Math.floor(new Date(result.createdAt).getTime() / 1000)
+        })
+      }).catch(err => reply(err))
+      
     }
   })
 
@@ -47,8 +86,6 @@ function getDB(request){
 function getModels(request){
   return request.server.plugins["dbSetup"].models
 }
-
-
 
   next()
 }
