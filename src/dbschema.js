@@ -8,6 +8,11 @@ module.exports = function (){
       ssl: true
     }
   }
+
+  if(!process.env.DATABASE_URL) {
+    throw new Error("No connection string set")
+  }
+
   var db = new Sequelize(process.env.DATABASE_URL, sequelizeOptions)
   db.authenticate()
     .catch(err => {
